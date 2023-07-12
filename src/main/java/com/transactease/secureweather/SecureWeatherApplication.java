@@ -6,8 +6,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class SecureWeatherApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(SecureWeatherApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(SecureWeatherApplication.class, args);
+    }
 
 }
