@@ -1,9 +1,10 @@
 package com.transactease.secureweather.service;
 
 import com.transactease.secureweather.dto.UserDto;
-import com.transactease.secureweather.model.User;
+import com.transactease.secureweather.model.UserEntity;
 import com.transactease.secureweather.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -16,21 +17,24 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public UserService(UserRepository userRepository) {
+    private final BCryptPasswordEncoder passwordEncoder;
+
+    public UserService(UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    public Mono<User> createNewUser(UserDto userDto) {
+    public Mono<UserEntity> createNewUser(UserDto userDto) {
         if (userDto.email() == null || userDto.email().isEmpty()) {
             return Mono.error(new IllegalArgumentException("Email cannot be null or empty"));
         }
 
-        User user = new User();
+        UserEntity user = new UserEntity();
         user.setEmail(userDto.email());
-        user.setPassword(userDto.password());
+        user.setPassword(passwordEncoder.encode(userDto.password()));
 
         return Mono.fromCallable(() -> userRepository.save(user))
-            .onErrorResume(Mono::error);
+            .onErrorResume(Mono::error).block();
     }
 
 

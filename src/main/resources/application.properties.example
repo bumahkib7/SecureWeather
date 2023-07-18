@@ -1,4 +1,29 @@
+######LOGGING########
 logging.level.web=trace
+
+
+####### DEV-TOOLS#######
 spring.devtools.add-properties=true
+
+#####JPA#########
 spring.jpa.hibernate.ddl-auto=update
-weatherapi.apikey=YOUR-API-KEY-GOES-HERE
+
+######DATABASE############
+spring.datasource.url=jdbc:postgresql://localhost:5432/postgres
+spring.datasource.password=postgres
+spring.datasource.username=postgres
+
+
+########API KEYS########
+weatherapi.apikey=
+x-rapid.api.host=ai-weather-by-meteosource.p.rapidapi.com
+x-rapid.baseUrl=https://ai-weather-by-meteosource.p.rapidapi.com/
+spring.security.user.password=Bukhari
+spring.security.user.name=Bukhari
+
+######JWT########
+app.jwtSecretFile=/SecureWeather/secret.key
+app.jwtSecret=LEAVE THIS EMPTY
+app.jwtExpirationMs=3600000
+
+
