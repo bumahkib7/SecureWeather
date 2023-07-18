@@ -1,7 +1,10 @@
 package com.transactease.secureweather.model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.util.HashSet;
@@ -28,7 +31,7 @@ public class City {
 
     @ManyToMany(mappedBy = "favouriteCities")
     @ToString.Exclude
-    private Set<User> users = new HashSet<>();
+    private Set<UserEntity> users = new HashSet<>();
 
     @Override
     public final boolean equals(Object o) {

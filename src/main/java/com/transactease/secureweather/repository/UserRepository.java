@@ -1,11 +1,12 @@
 package com.transactease.secureweather.repository;
 
-import com.transactease.secureweather.model.User;
-import org.springframework.data.jpa.repository.JpaRepository;
+import com.transactease.secureweather.model.UserEntity;
+import org.springframework.data.repository.reactive.ReactiveCrudRepository;
+import reactor.core.publisher.Mono;
 
-import java.util.Optional;
 import java.util.UUID;
 
-public interface UserRepository extends JpaRepository<User, UUID> {
-    void delete(UUID uuid);
+public interface UserRepository extends ReactiveCrudRepository<UserEntity, UUID> {
+
+    Mono<UserEntity> findByEmail(String email);
 }

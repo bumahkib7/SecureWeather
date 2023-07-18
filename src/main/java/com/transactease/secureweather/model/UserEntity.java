@@ -2,7 +2,10 @@ package com.transactease.secureweather.model;
 
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
-import lombok.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.proxy.HibernateProxy;
 
 import java.util.HashSet;
@@ -16,7 +19,7 @@ import java.util.UUID;
 @ToString
 @RequiredArgsConstructor
 @Table(name = "app_user")
-public class User {
+public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "user_id")
@@ -26,7 +29,7 @@ public class User {
     @Email
     private String email;
 
-    @Column(name= "password")
+    @Column(name = "password")
     private String password;
 
 
@@ -39,6 +42,16 @@ public class User {
     @Column(name = "user_cities")
     private Set<City> favouriteCities = new HashSet<>();
 
+    @ElementCollection(targetClass = Role.class)
+    @CollectionTable(name = "user_role", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "role", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private Set<Role> roles = new HashSet<>();
+
+    public String getUsernameFromEmail(String email) {
+        return email.split("@")[0];
+    }
+
     @Override
     public final boolean equals(Object o) {
         if (this == o) return true;
@@ -46,8 +59,8 @@ public class User {
         Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
         Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
         if (thisEffectiveClass != oEffectiveClass) return false;
-        User user = (User) o;
-        return getUuid() != null && Objects.equals(getUuid(), user.getUuid());
+        UserEntity that = (UserEntity) o;
+        return getUuid() != null && Objects.equals(getUuid(), that.getUuid());
     }
 
     @Override
