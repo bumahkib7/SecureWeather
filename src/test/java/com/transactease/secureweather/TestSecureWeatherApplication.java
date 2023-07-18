@@ -1,4 +1,4 @@
-package com.example.secureweather;
+package com.transactease.secureweather;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -9,14 +9,14 @@ import org.testcontainers.containers.PostgreSQLContainer;
 @TestConfiguration(proxyBeanMethods = false)
 public class TestSecureWeatherApplication {
 
+    public static void main(String[] args) {
+        SpringApplication.from(SecureWeatherApplication::main).with(TestSecureWeatherApplication.class).run(args);
+    }
+
     @Bean
     @ServiceConnection
     PostgreSQLContainer<?> postgresContainer() {
         return new PostgreSQLContainer<>("postgres:latest");
-    }
-
-    public static void main(String[] args) {
-        SpringApplication.from(SecureWeatherApplication::main).with(TestSecureWeatherApplication.class).run(args);
     }
 
 }

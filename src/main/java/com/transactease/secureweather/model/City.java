@@ -19,6 +19,7 @@ public class City {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "city_id")
     private UUID uuid;
 
     @Column

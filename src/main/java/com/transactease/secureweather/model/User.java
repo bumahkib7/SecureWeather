@@ -15,9 +15,11 @@ import java.util.UUID;
 @Setter
 @ToString
 @RequiredArgsConstructor
+@Table(name = "app_user")
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "user_id")
     public UUID uuid;
 
     @Column(name = "email")
@@ -34,6 +36,7 @@ public class User {
         joinColumns = @JoinColumn(name = "user_id"),
         inverseJoinColumns = @JoinColumn(name = "city_id"))
     @ToString.Exclude
+    @Column(name = "user_cities")
     private Set<City> favouriteCities = new HashSet<>();
 
     @Override

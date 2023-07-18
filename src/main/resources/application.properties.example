@@ -1,0 +1,4 @@
+logging.level.web=trace
+spring.devtools.add-properties=true
+spring.jpa.hibernate.ddl-auto=update
+weatherapi.apikey=YOUR-API-KEY-GOES-HERE
