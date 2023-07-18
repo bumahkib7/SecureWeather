@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: secureweather
+spec:
+    replicas: 3
+    selector:
+        matchLabels:
+            app: secureweather
+    template:
+        metadata:
+            labels:
+                app: secureweather
+        spec:
+            containers:
+                -   name: secureweather
+                    image: secureweather:latest
+                    ports:
+                        -   containerPort: 8080

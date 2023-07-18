@@ -23,7 +23,6 @@ public class WeatherController {
         this.cityRepository = cityRepository;
     }
 
-
     @GetMapping("place/{place}")
     @Cacheable("City")
     public Mono<String> getPlaceInfo(@PathVariable String place) {
@@ -31,6 +30,5 @@ public class WeatherController {
         city.setName(place);
         return weatherApiClient.getPlaceInfo(city.getName()).cache();
     }
-
 
 }

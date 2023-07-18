@@ -1,6 +1,7 @@
 package com.transactease.secureweather.client;
 
 import com.transactease.secureweather.model.City;
+import jakarta.validation.constraints.NotBlank;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatusCode;
@@ -32,7 +33,7 @@ public class WeatherApiClient {
 
 
 
-    public Mono<String> getPlaceInfo(String text) {
+    public Mono<String> getPlaceInfo(@NotBlank String text) {
         return webClient.get()
             .uri(uriBuilder -> uriBuilder.path("/find_places")
                 .queryParam("text", text)
