@@ -1,76 +1,82 @@
 package com.transactease.secureweather.configuration;
 
 import com.transactease.secureweather.service.CustomUserDetailsService;
-import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
+import com.transactease.secureweather.utils.JwtAuthenticationFilter;
+import com.transactease.secureweather.utils.JwtUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.ReactiveAuthenticationManager;
 import org.springframework.security.authentication.UserDetailsRepositoryReactiveAuthenticationManager;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
+import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.logout.HttpStatusReturningLogoutSuccessHandler;
-import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
-import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-
-import static org.springframework.security.config.Customizer.withDefaults;
+import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.security.web.server.authentication.logout.HttpStatusReturningServerLogoutSuccessHandler;
+import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
+import org.springframework.security.web.server.context.ServerSecurityContextRepository;
+import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository;
+import org.springframework.security.web.server.csrf.CookieServerCsrfTokenRepository;
 
 @Configuration
 public class SecurityConfig {
 
 
-
     private final CustomUserDetailsService userDetailsService;
+    private final JwtUtils jwtUtils;
 
 
-
-    public SecurityConfig(CustomUserDetailsService userDetailsService) {
+    public SecurityConfig(CustomUserDetailsService userDetailsService, JwtUtils jwtUtils) {
         this.userDetailsService = userDetailsService;
+        this.jwtUtils = jwtUtils;
     }
 
 
-
     @Bean
+    @Primary
     public ReactiveUserDetailsService userDetailsService() {
         return (ReactiveUserDetailsService) userDetailsService;
     }
 
     @Bean
-    public ReactiveAuthenticationManager authenticationManager(ReactiveUserDetailsService userDetailsService) {
+    public ReactiveAuthenticationManager authenticationManager(@Qualifier("customUserDetailsService") ReactiveUserDetailsService userDetailsService) {
         return new UserDetailsRepositoryReactiveAuthenticationManager(userDetailsService);
     }
 
 
-
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http
-            .authorizeHttpRequests(authorize -> authorize
-                .requestMatchers(PathRequest.toStaticResources().atCommonLocations()).permitAll()
-                .requestMatchers("/public/**").permitAll()
-                .requestMatchers("/api/auth/login").permitAll()
-                .requestMatchers("/api/auth/logout").authenticated()
-                .anyRequest().authenticated()
-            )
-            .formLogin(withDefaults())
-            .httpBasic(withDefaults())
+            .addFilterAt(new JwtAuthenticationFilter(jwtUtils, userDetailsService,
+                    new WebSessionServerSecurityContextRepository()),
+                SecurityWebFiltersOrder.HTTP_BASIC)
+            .authorizeExchange(exchanges -> exchanges
+                .pathMatchers("/public/**", "/api/auth/login", "/favicon.ico").permitAll()
+                .pathMatchers("/api/auth/logout").authenticated()
+                .anyExchange().authenticated())
+            .csrf(csrf -> csrf.csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse()))
             .logout(logout -> logout
                 .logoutUrl("/api/auth/logout")
                 .logoutSuccessHandler(logoutSuccessHandler())
-            )
-            .csrf(csrf -> csrf.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse()))
-            .rememberMe(withDefaults())
-            .userDetailsService((UserDetailsService) userDetailsService);
+            );
 
         return http.build();
     }
 
-    private LogoutSuccessHandler logoutSuccessHandler() {
-        return new HttpStatusReturningLogoutSuccessHandler(HttpStatus.OK);
+
+    @Bean
+    public ServerSecurityContextRepository securityContextRepository() {
+        WebSessionServerSecurityContextRepository securityContextRepository = new WebSessionServerSecurityContextRepository();
+        securityContextRepository.setSpringSecurityContextAttrName("CUSTOM_SECURITY_CONTEXT_ATTR_NAME"); // Optional:
+        // Custom attribute name
+        securityContextRepository.setCacheSecurityContext(false); // Optional: You can enable caching if needed
+        return securityContextRepository;
     }
 
+    private ServerLogoutSuccessHandler logoutSuccessHandler() {
+        return new HttpStatusReturningServerLogoutSuccessHandler(HttpStatus.OK);
+    }
 
 }

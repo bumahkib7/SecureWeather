@@ -55,7 +55,6 @@ public class JwtUtils {
         } catch (IllegalArgumentException e) {
             // JWT claims string is empty
         }
-
         return false;
     }
 
