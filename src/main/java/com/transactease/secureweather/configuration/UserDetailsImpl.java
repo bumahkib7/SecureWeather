@@ -7,11 +7,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import java.util.Collection;
 @Data
 public class UserDetailsImpl implements UserDetails {
-
     private String username;
     private String password;
     private Collection<? extends GrantedAuthority> authorities;
 
+    // ... Your getters, setters, and other methods go here.
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -8,6 +8,8 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,6 +17,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.security.SecureRandom;
 import java.util.Base64;
+import java.util.Properties;
 
 @Component
 @Slf4j
@@ -61,10 +64,35 @@ public class RandomSecretGenerator implements ApplicationListener<ApplicationRea
             try {
                 Path path = Paths.get(jwtSecretFile);
                 Files.write(path, secretKey.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                log.info("Successfully created and saved secret key."); // log success
+
+                // Save the secret key into the application.properties file
+                saveSecretKeyToProperties(secretKey);
+                log.info("Successfully saved secret key to properties");
             } catch (IOException e) {
-                log.error("Successfully create secret key ");
+                log.error("Failed to save secret key.", e); // log failure
             }
         }
         return secretKey;
     }
+
+
+
+    private void saveSecretKeyToProperties(String secretKey) {
+        try {
+            Properties prop = new Properties();
+            String propFileName = "src/main/resources/application.properties";
+            FileInputStream in = new FileInputStream(propFileName);
+            prop.load(in);
+            in.close();
+
+            FileOutputStream out = new FileOutputStream(propFileName);
+            prop.setProperty("app.jwtSecret", secretKey);
+            prop.store(out, null);
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
