@@ -26,4 +26,19 @@ app.jwtSecretFile=/SecureWeather/secret.key
 app.jwtSecret=LEAVE THIS EMPTY
 app.jwtExpirationMs=3600000
 
+########Resilience#########
+resilience4j.circuitbreaker.instances.getUser.slidingWindowSize=5
+resilience4j.circuitbreaker.instances.getUser.minimumNumberOfCalls=5
+resilience4j.circuitbreaker.instances.getUser.permittedNumberOfCallsInHalfOpenState=3
+resilience4j.circuitbreaker.instances.getUser.waitDurationInOpenState=10s
+resilience4j.circuitbreaker.instances.getUser.failureRateThreshold=50
+resilience4j.circuitbreaker.instances.getUser.slowCallRateThreshold=100
+resilience4j.circuitbreaker.instances.getUser.slowCallDurationThreshold=60s
+
+resilience4j.circuitbreaker.instances.default.slidingWindowSize=100
+resilience4j.circuitbreaker.instances.default.permittedNumberOfCallsInHalfOpenState=10
+resilience4j.circuitbreaker.instances.default.waitDurationInOpenState=30s
+resilience4j.circuitbreaker.instances.default.failureRateThreshold=50
+resilience4j.circuitbreaker.instances.default.slowCallRateThreshold=100
+resilience4j.circuitbreaker.instances.default.slowCallDurationThreshold=60s
 

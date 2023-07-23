@@ -13,12 +13,15 @@ import org.springframework.security.authentication.UserDetailsRepositoryReactive
 import org.springframework.security.config.web.server.SecurityWebFiltersOrder;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.logout.HttpStatusReturningServerLogoutSuccessHandler;
 import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
 import org.springframework.security.web.server.context.ServerSecurityContextRepository;
 import org.springframework.security.web.server.context.WebSessionServerSecurityContextRepository;
 import org.springframework.security.web.server.csrf.CookieServerCsrfTokenRepository;
+import org.springframework.security.web.server.util.matcher.NegatedServerWebExchangeMatcher;
+import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatchers;
 
 @Configuration
 public class SecurityConfig {
@@ -41,26 +44,32 @@ public class SecurityConfig {
     }
 
     @Bean
-    public ReactiveAuthenticationManager authenticationManager(@Qualifier("customUserDetailsService") ReactiveUserDetailsService userDetailsService) {
-        return new UserDetailsRepositoryReactiveAuthenticationManager(userDetailsService);
+    public ReactiveAuthenticationManager authenticationManager(@Qualifier("customUserDetailsService") ReactiveUserDetailsService userDetailsService,
+                                                               PasswordEncoder passwordEncoder) {
+        UserDetailsRepositoryReactiveAuthenticationManager authenticationManager = new UserDetailsRepositoryReactiveAuthenticationManager(userDetailsService);
+        authenticationManager.setPasswordEncoder(passwordEncoder);
+        return authenticationManager;
     }
 
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http
-            .addFilterAt(new JwtAuthenticationFilter(jwtUtils, userDetailsService,
-                    new WebSessionServerSecurityContextRepository()),
-                SecurityWebFiltersOrder.HTTP_BASIC)
+            .addFilterAt(
+                new JwtAuthenticationFilter(jwtUtils, (CustomUserDetailsService) userDetailsService(), new WebSessionServerSecurityContextRepository()),
+                SecurityWebFiltersOrder.HTTP_BASIC
+            )
+            .securityMatcher(new NegatedServerWebExchangeMatcher(ServerWebExchangeMatchers.pathMatchers("/api/v1/users/new-user")))
             .authorizeExchange(exchanges -> exchanges
                 .pathMatchers("/public/**", "/api/auth/login", "/favicon.ico").permitAll()
-                .pathMatchers("/api/auth/logout").authenticated()
+                .pathMatchers("/api/auth/logout", "/api/v1/users/**").authenticated()
                 .anyExchange().authenticated())
-            .csrf(csrf -> csrf.csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse()))
+            .csrf(csrf -> csrf.csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse()).disable())
             .logout(logout -> logout
                 .logoutUrl("/api/auth/logout")
                 .logoutSuccessHandler(logoutSuccessHandler())
             );
+
 
         return http.build();
     }

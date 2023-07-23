@@ -1,10 +1,12 @@
 package com.transactease.secureweather.controller;
 
+import com.transactease.secureweather.configuration.PasswordEncoderConfig;
 import com.transactease.secureweather.dto.LoginRequest;
 import com.transactease.secureweather.repository.UserRepository;
 import com.transactease.secureweather.service.UserService;
 import com.transactease.secureweather.utils.JwtResponse;
 import com.transactease.secureweather.utils.JwtUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.server.reactive.ServerHttpResponse;
@@ -26,6 +28,7 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/auth")
 public class AuthenticationController {
@@ -35,9 +38,13 @@ public class AuthenticationController {
 
     private final UserRepository userRepository;
 
-    private final BCryptPasswordEncoder passwordEncoder;
+    private final PasswordEncoderConfig passwordEncoder;
 
-    public AuthenticationController(ReactiveAuthenticationManager authenticationManager, JwtUtils jwtUtils, UserService userService, UserRepository userRepository, BCryptPasswordEncoder passwordEncoder) {
+    public AuthenticationController(ReactiveAuthenticationManager authenticationManager,
+                                    JwtUtils jwtUtils,
+                                    UserService userService,
+                                    UserRepository userRepository,
+                                    PasswordEncoderConfig passwordEncoder) {
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
         this.userRepository = userRepository;
@@ -60,7 +67,7 @@ public class AuthenticationController {
                 SecurityContextHolder.getContext().setAuthentication(authentication);
                 return userRepository.findByEmail(loginRequest.email())
                     .flatMap(user -> {
-                        if (passwordEncoder.matches(loginRequest.password(), user.getPassword())) {
+                        if (passwordEncoder.passwordEncoder().matches(loginRequest.password(), user.getPassword())) {
                             String jwt = jwtUtils.generateJwtToken(authentication);
                             return Mono.just(ResponseEntity.ok(new JwtResponse(jwt)));
                         } else {

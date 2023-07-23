@@ -1,4 +1,8 @@
 package com.transactease.secureweather.dto;
 
-public record UserDto(String email, String password) {
+import com.transactease.secureweather.model.Role;
+
+import java.util.Set;
+
+public record UserDto(String email, String password, Role[] roles) {
 }

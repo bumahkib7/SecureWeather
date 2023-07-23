@@ -1,6 +1,9 @@
 FROM openjdk:17-jdk
 LABEL authors="bukharikibuka"
 
+# Set the working directory to /app
+WORKDIR /app
+
 # Add a volume pointing to /tmp
 VOLUME /tmp
 
@@ -8,10 +11,10 @@ VOLUME /tmp
 EXPOSE 8080
 
 # The application's jar file
-ARG JAR_FILE=target/secureweather-0.0.1-SNAPSHOT.jar
+ARG JAR_FILE=target/SecureWeather-0.0.1-SNAPSHOT.jar
 
-# Add the application's jar to the container
-ADD ${JAR_FILE} app.jar
+# Copy the application's jar to the container
+COPY ${JAR_FILE} app.jar
 
 # Run the jar file
-ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app.jar"]
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]

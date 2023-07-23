@@ -3,6 +3,7 @@ package com.transactease.secureweather.model;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.Set;
@@ -16,8 +17,8 @@ public class UserEntity {
     private UUID uuid;
     private String email;
     private String password;
-    private Set<City> favouriteCities;
-    private Set<Role> roles;
+    @Column("roles")
+    private Role[] roles;
 
     public String getUsernameFromEmail(String email) {
         return email.split("@")[0];

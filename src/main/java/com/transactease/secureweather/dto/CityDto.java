@@ -1,4 +1,4 @@
 package com.transactease.secureweather.dto;
 
-public record CityDto() {
+public record CityDto(String name) {
 }
