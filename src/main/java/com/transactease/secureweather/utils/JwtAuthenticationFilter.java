@@ -1,7 +1,7 @@
 package com.transactease.secureweather.utils;
 
 import com.transactease.secureweather.service.CustomUserDetailsService;
-import jakarta.validation.constraints.NotNull;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextImpl;
@@ -13,6 +13,7 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
+@Slf4j
 public class JwtAuthenticationFilter implements WebFilter {
 
     private final JwtUtils jwtUtils;
@@ -28,8 +29,9 @@ public class JwtAuthenticationFilter implements WebFilter {
     }
 
     @Override
-    public Mono<Void> filter(@NotNull ServerWebExchange exchange,@NotNull WebFilterChain chain) {
+    public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
         String jwt = parseJwt(exchange.getRequest());
+        log.info("JWT token: {}", jwt);
         if (jwt != null && jwtUtils.validateJwtToken(jwt)) {
             String username = jwtUtils.getUserNameFromJwtToken(jwt);
 
@@ -39,11 +41,19 @@ public class JwtAuthenticationFilter implements WebFilter {
                         userDetails, null, userDetails.getAuthorities());
                     return new SecurityContextImpl(authentication);
                 })
-                .flatMap(securityContext -> securityContextRepository.save(exchange, securityContext))
-                .then(chain.filter(exchange));
+                .flatMap(securityContext -> {
+                    log.info("JWT authentication succeeded for user: {}", securityContext.getAuthentication().getName());
+                    return securityContextRepository.save(exchange, securityContext).then(Mono.just(securityContext));
+                })
+                .doOnError(throwable -> log.error("Error occurred while processing JWT authentication", throwable))
+                .then(chain.filter(exchange))
+                .doOnError(throwable -> log.error("Error occurred while processing the filter chain", throwable));
+        } else {
+            log.warn("Invalid or expired JWT token. ");
         }
 
-        return chain.filter(exchange);
+        return chain.filter(exchange)
+            .doOnError(throwable -> log.error("Error occurred while processing the filter chain", throwable));
     }
 
 

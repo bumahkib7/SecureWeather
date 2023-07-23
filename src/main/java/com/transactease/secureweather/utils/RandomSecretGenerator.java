@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.io.FileInputStream;
@@ -23,13 +22,11 @@ import java.util.Properties;
 @Slf4j
 public class RandomSecretGenerator implements ApplicationListener<ApplicationReadyEvent> {
 
-
     @Value("${app.jwtSecretFile}")
     private String jwtSecretFile;
 
     @Value("${app.jwtSecret}")
     private String jwtSecret;
-
 
     @Override
     public void onApplicationEvent(@NotNull ApplicationReadyEvent event) {
@@ -76,8 +73,6 @@ public class RandomSecretGenerator implements ApplicationListener<ApplicationRea
         return secretKey;
     }
 
-
-
     private void saveSecretKeyToProperties(String secretKey) {
         try {
             Properties prop = new Properties();
@@ -94,5 +89,4 @@ public class RandomSecretGenerator implements ApplicationListener<ApplicationRea
             e.printStackTrace();
         }
     }
-
 }
