@@ -42,7 +42,7 @@ public class CustomUserDetailsService implements ReactiveUserDetailsService {
         return userRepository.findByEmail(email)
             .doOnNext(user -> log.info("Found user: {}", user.getEmail()))
             .switchIfEmpty(Mono.error(new UsernameNotFoundException("User not found: " + email)))
-            .map(userEntity -> {
+            .flatMap(userEntity -> {
                 List<GrantedAuthority> authorities = Arrays.stream(userEntity.getRoles())
                     .map(role -> {
                         log.info("Mapping role: {}", role.getValue());
@@ -50,14 +50,18 @@ public class CustomUserDetailsService implements ReactiveUserDetailsService {
                     })
                     .collect(Collectors.toList());
 
-                return User.withUsername(userEntity.getEmail()) // Changed getUsernameFromEmail(email) to getEmail() as getUsernameFromEmail(email) doesn't seem to exist in UserEntity
+                UserDetails userDetails = User.withUsername(userEntity.getEmail())
                     .password(userEntity.getPassword())
                     .authorities(authorities)
                     .build();
+
+                log.info("Mapped user details: {}", userDetails.getUsername());
+
+                return Mono.just(userDetails);
             })
-            .doOnNext(userDetails -> log.info("Mapped user details: {}", userDetails.getUsername()))
             .doOnError(e -> log.error("Error occurred while fetching user: {}", e.getMessage()));
     }
+
 
     public Mono<UserEntity> createUser(String email, String rawPassword, Role[] roles) {
         String encodedPassword = passwordEncoder.passwordEncoder().encode(rawPassword);

@@ -17,7 +17,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -54,6 +53,7 @@ public class AuthenticationController {
     @PostMapping("/login")
     public Mono<ResponseEntity<JwtResponse>> authenticateUser(@RequestBody Mono<LoginRequest> loginRequestMono) {
         return loginRequestMono
+            .doOnNext(loginRequest ->  log.info("Received login request for user: {}", loginRequest.email()))
             .flatMap(loginRequest ->
                 authenticationManager.authenticate(
                         new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password())
@@ -68,17 +68,26 @@ public class AuthenticationController {
                 return userRepository.findByEmail(loginRequest.email())
                     .flatMap(user -> {
                         if (passwordEncoder.passwordEncoder().matches(loginRequest.password(), user.getPassword())) {
+                            log.info("User {} authenticated successfully.", loginRequest.email());
                             String jwt = jwtUtils.generateJwtToken(authentication);
                             return Mono.just(ResponseEntity.ok(new JwtResponse(jwt)));
                         } else {
+                            log.error("Invalid password for user: {}", loginRequest.email());
                             return Mono.error(new BadCredentialsException("Invalid password"));
                         }
                     })
                     .switchIfEmpty(Mono.error(new UsernameNotFoundException("User not found")));
             })
-            .onErrorResume(BadCredentialsException.class, e -> Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build()))
-            .onErrorResume(UsernameNotFoundException.class, e -> Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
+            .onErrorResume(BadCredentialsException.class, e -> {
+                log.error("Authentication failed due to bad credentials.");
+                return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+            })
+            .onErrorResume(UsernameNotFoundException.class, e -> {
+                log.error("User not found during authentication.");
+                return Mono.just(ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+            });
     }
+
 
 
     @PostMapping("/logout")

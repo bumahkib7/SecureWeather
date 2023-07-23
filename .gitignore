@@ -33,5 +33,4 @@ build/
 
 /src/main/resources/application.properties
 /secret.key
-/application.env
 /config/application.properties
