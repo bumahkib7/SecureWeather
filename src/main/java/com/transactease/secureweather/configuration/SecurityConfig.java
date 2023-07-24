@@ -65,7 +65,10 @@ public class SecurityConfig {
             .securityMatcher(new NegatedServerWebExchangeMatcher(ServerWebExchangeMatchers.pathMatchers("/api/v1/users/new-user")))
             .authorizeExchange(exchanges -> exchanges
                 .pathMatchers("/public/**", "/api/auth/login", "/favicon.ico").permitAll()
-                .pathMatchers("/api/v1/users/all").hasAuthority("ADMIN")
+                .pathMatchers("/api/v1/users/all",
+                    "/api/v1/cities/new-city",
+                    "/api/v1/cities/update/{id}",
+                    "/api/v1/cities/delete/{id}").hasAuthority("ADMIN")
                 .anyExchange().authenticated())
             .csrf(csrf -> csrf.csrfTokenRepository(CookieServerCsrfTokenRepository.withHttpOnlyFalse()).disable())
             .logout(logout -> logout
