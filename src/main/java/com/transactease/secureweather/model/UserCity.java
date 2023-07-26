@@ -16,9 +16,18 @@ public class UserCity {
     public UserCity() {
     }
 
+    public UserCity(UUID userId, UUID cityId) {
+        this.userId = userId;
+        this.cityId = cityId;
+    }
+
 
     public UUID getId() {
         return this.id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
     }
 
     public UUID getUserId(UUID userId) {
@@ -29,16 +38,12 @@ public class UserCity {
         return this.cityId;
     }
 
-    public void setId(UUID id) {
-        this.id = id;
+    public void setCityId(UUID cityId) {
+        this.cityId = cityId;
     }
 
     public void setUserId(UUID userId) {
         this.userId = userId;
-    }
-
-    public void setCityId(UUID cityId) {
-        this.cityId = cityId;
     }
 
     public boolean equals(final Object o) {
