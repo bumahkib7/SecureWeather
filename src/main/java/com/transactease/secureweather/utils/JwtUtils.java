@@ -1,8 +1,10 @@
 package com.transactease.secureweather.utils;
 
-import io.jsonwebtoken.*;
 
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import io.jsonwebtoken.security.SignatureException;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.event.EventListener;
@@ -38,7 +40,7 @@ public class JwtUtils {
         secretKey = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
     }
 
-    public String generateJwtToken(Authentication authentication) {
+    public String generateJwtToken(@NotNull Authentication authentication) {
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
 
         // Get the user roles from the UserDetails object

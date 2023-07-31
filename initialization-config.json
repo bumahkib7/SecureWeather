@@ -1,0 +1,6 @@
+[
+  {
+    "name": "org.slf4j.LoggerFactory",
+    "initializeAtBuildTime": true
+  }
+]
