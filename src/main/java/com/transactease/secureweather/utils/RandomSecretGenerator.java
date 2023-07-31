@@ -1,6 +1,5 @@
 package com.transactease.secureweather.utils;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -29,7 +28,7 @@ public class RandomSecretGenerator implements ApplicationListener<ApplicationRea
     private String jwtSecret;
 
     @Override
-    public void onApplicationEvent(@NotNull ApplicationReadyEvent event) {
+    public void onApplicationEvent( ApplicationReadyEvent event) {
         if (jwtSecret.isEmpty()) {
             jwtSecret = readSecretKey();
             if (jwtSecret.isEmpty()) {
@@ -51,19 +50,23 @@ public class RandomSecretGenerator implements ApplicationListener<ApplicationRea
     }
 
     private String generateAndSaveSecret() {
-        // Generate a random secret key
         byte[] secretBytes = new byte[32];
         new SecureRandom().nextBytes(secretBytes);
         String secretKey = Base64.getEncoder().encodeToString(secretBytes);
 
-        // Save the secret key to a file if jwtSecretFile is configured
         if (!jwtSecretFile.isEmpty()) {
             try {
                 Path path = Paths.get(jwtSecretFile);
-                Files.write(path, secretKey.getBytes(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+
+                Files.write(
+                        path,
+                        secretKey.getBytes(),
+                        StandardOpenOption.CREATE,
+                        StandardOpenOption.TRUNCATE_EXISTING
+                );
+
                 log.info("Successfully created and saved secret key."); // log success
 
-                // Save the secret key into the application.properties file
                 saveSecretKeyToProperties(secretKey);
                 log.info("Successfully saved secret key to properties");
             } catch (IOException e) {
@@ -86,7 +89,7 @@ public class RandomSecretGenerator implements ApplicationListener<ApplicationRea
             prop.store(out, null);
             out.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error occurred: ",e);
         }
     }
 }

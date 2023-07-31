@@ -3,6 +3,7 @@ package com.transactease.secureweather.configuration;
 import com.transactease.secureweather.service.CustomUserDetailsService;
 import com.transactease.secureweather.utils.JwtAuthenticationFilter;
 import com.transactease.secureweather.utils.JwtUtils;
+import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -92,7 +93,8 @@ public class SecurityConfig {
         return securityContextRepository;
     }
 
-    private ServerLogoutSuccessHandler logoutSuccessHandler() {
+
+    private @NotNull ServerLogoutSuccessHandler logoutSuccessHandler() {
         log.info("Creating ServerLogoutSuccessHandler...");
         ServerLogoutSuccessHandler successHandler = new HttpStatusReturningServerLogoutSuccessHandler(HttpStatus.OK);
         log.info("ServerLogoutSuccessHandler created.");
