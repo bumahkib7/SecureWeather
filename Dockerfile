@@ -1,5 +1,5 @@
 # Stage 1: Build the JAR file using Maven and OpenJDK 17
-FROM openjdk:17 as build
+FROM openjdk:22-ea-22 as build
 WORKDIR /app
 
 # Install Maven 3.9.3
@@ -15,7 +15,7 @@ COPY . /app
 RUN mvn clean package -DskipTests -T 3C
 
 # Stage 2: Build the final Docker image with the JAR file
-FROM openjdk:17
+FROM openjdk:22-ea-22
  # or use openjdk:17
 LABEL authors="bukharikibuka"
 WORKDIR /app
